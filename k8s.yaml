@@ -7,6 +7,7 @@ spec:
     matchLabels:
       app: analyze-web
   replicas: 1
+  
   template:
     metadata:
       labels:
@@ -15,6 +16,7 @@ spec:
       containers:
       - name: analyze-web
         image: hub.pingcap.net/robert/analyze-web:master
+        imagePullPolicy: Always
         ports:
         - containerPort: 80
 ---

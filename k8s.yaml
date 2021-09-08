@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: analyze_web
+  name: analyze-web
 spec:
   selector:
     matchLabels:
-      app: analyze_web
-  replicas: 2
+      app: analyze-web
+  replicas: 1
   template:
     metadata:
       labels:
-        app: analyze_web
+        app: analyze-web
     spec:
       containers:
-      - name: analyze_web
+      - name: analyze-web
         image: hub.pingcap.net/robert/analyze-web:master
         ports:
         - containerPort: 80
@@ -21,15 +21,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: analyze_web
+  name: analyze-web-service
   labels:
-    app: analyze_web
+    app: analyze-web-serivce
 spec:
   type: NodePort
+  selector:
+    app: analyze-web
   ports:
   - port: 80
     targetPort: 80
     nodePort: 31112
     protocol: TCP
-  selector:
-    app: analyze_web
+  

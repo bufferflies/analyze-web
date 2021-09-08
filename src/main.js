@@ -18,6 +18,7 @@ import { use } from 'echarts/core'
 Vue.use(ElementUI);
 
 Vue.prototype.$http=axios;
+console.log("env",process.env.VUE_APP_URL)
 axios.defaults.baseURL=process.env.VUE_APP_URL
 Vue.config.productionTip = false
 

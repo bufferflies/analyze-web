@@ -18,16 +18,12 @@ const routes = [
     // which is lazy-loaded when the route is visited.
     component: () => import(/* webpackChunkName: "about" */ '../components/Hot.vue')
   },
-  {
-    path: '*',
-    name: 'PageNotFound',
-    component: PageNotFound
-  }
+  
 
 ]
 
 const router = new VueRouter({
-  mode: 'history',
+  mode: 'hash',
   base: process.env.BASE_URL,
   routes
 })

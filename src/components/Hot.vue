@@ -1,23 +1,32 @@
 <template>
-  <div>
-    <el-table
-      :data="tableData"
-      :span-method="objectSpan"
-      style="width: 100%"
-      border
-    >
-      <el-table-column prop="cmd" label="cmd" width="180" />
-      <el-table-column prop="start" label="start" width="180" />
-      <el-table-column prop="end" label="end" width="180" />
-      <el-table-column prop="metrics" label="metrics" width="180" />
-      <el-table-column prop="operator" label="operator" width="180" />
-      <el-table-column prop="min" label="min" />
-      <el-table-column prop="max" label="max" />
-      <el-table-column prop="mean" label="mean" />
-      <el-table-column prop="std" label="std" />
-    </el-table>
-    <v-chart class="chart" :option="option" />
-  </div>
+  <el-row type="flex" class="row-bg" justify="center">
+    <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+    <el-col :span="12">
+      <div>
+        <el-checkbox-group v-model="checkloads">
+          <el-checkbox
+            v-for="workload in workloads"
+            :label="workload.name"
+            :key="workload.name"
+            >{{ workload.name }}</el-checkbox
+          >
+        </el-checkbox-group>
+        <el-table :data="metrics" border>
+          <el-table-column prop="name" label="name" />
+          <el-table-column
+            v-for="{ name } in workloads"
+            :prop="name"
+            :key="name"
+            :label="name"
+            width="180"
+          >
+          </el-table-column>
+        </el-table>
+        <!-- <v-chart class="chart" :option="option" /> -->
+      </div>
+    </el-col>
+    <el-col :span="6"><div class="grid-content bg-purple"></div></el-col>
+  </el-row>
 </template>
 
 <script>
@@ -27,28 +36,34 @@ export default {
   mounted() {
     const id = this.$route.params.id;
     this.$http.get("/analyze/" + id).then((response) => {
-      this.fillTable(response.data.metrics);
-      this.fillCharts(response.data.table);
+      this.fillTable(response.data);
+      // this.fillCharts(response.data.table);
     });
   },
   methods: {
     fillTable(info) {
-      var index = 0;
-      var data = [];
-      for (var i in info) {
-        delete info[i].data;
-        var arr = i.split("_");
-        var o = {
-          cmd: arr[0],
-          metrics: arr.slice(2, arr.length - 1),
-          operator: arr[arr.length - 1],
-          start: info[i].start_ts,
-          end: info[i].end_ts,
-        };
-        data[index] = Object.assign(info[i], o);
-        index++;
+      if (info.length < 0) {
+        return;
       }
-      this.tableData = data;
+      var workloads = [];
+      var checkloads = [];
+      info.forEach((value, item) => {
+        Object.assign(value, value.metrics);
+        delete value.metrics;
+        workloads.push({ name: value.workload });
+        checkloads.push(value.workload);
+      });
+      var data = [];
+      for (const [key] of Object.entries(info[0])) {
+        var obj = { name: key };
+        info.forEach((value, item) => {
+          obj[value.workload] = value[key];
+        });
+        data.push(obj);
+      }
+      this.metrics = data;
+      this.workloads = workloads;
+      this.checkloads = checkloads;
     },
     fillCharts(table) {
       var length = 0;
@@ -73,25 +88,11 @@ export default {
       this.option.xAxis.data = x;
       this.option.legend.data = legend;
     },
-    objectSpan({ row, column, rowIndex, columnIndex }) {
-      if (columnIndex <= 2) {
-        if (rowIndex % 4 == 0) {
-          return {
-            rowspan: 4,
-            colspan: 1,
-          };
-        } else {
-          return {
-            rowspan: 0,
-            colspan: 0,
-          };
-        }
-      }
-    },
   },
   data() {
     return {
       info: "null",
+
       option: {
         tooltip: {
           trigger: "axis",
@@ -107,7 +108,9 @@ export default {
         },
         series: [],
       },
-      tableData: [{}],
+      checkloads: ["test"],
+      workloads: [{ name: "test" }, { name: "111" }],
+      metrics: [],
     };
   },
 };

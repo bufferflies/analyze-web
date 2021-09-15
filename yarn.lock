@@ -5623,6 +5623,11 @@
   dependencies:
     "minimist" "^1.2.5"
 
+"moment@^2.19.2", "moment@^2.29.1":
+  "integrity" "sha512-kHmoybcPV8Sqy59DwNDY3Jefr64lK/by/da0ViFcuA4DH0vQg5Q6Ze5VimxkfQNSC+Mls/Kx53s7TjP1RhFEDQ=="
+  "resolved" "https://registry.npmjs.org/moment/-/moment-2.29.1.tgz"
+  "version" "2.29.1"
+
 "move-concurrently@^1.0.1":
   "integrity" "sha1-viwAX9oy4LKa8fBdfEszIUxwH5I="
   "resolved" "https://registry.nlark.com/move-concurrently/download/move-concurrently-1.0.1.tgz"
@@ -8404,6 +8409,13 @@
     "vue-hot-reload-api" "^2.3.0"
     "vue-style-loader" "^4.1.0"
 
+"vue-moment@^4.1.0":
+  "integrity" "sha512-Gzisqpg82ItlrUyiD9d0Kfru+JorW2o4mQOH06lEDZNgxci0tv/fua1Hl0bo4DozDV2JK1r52Atn/8QVCu8qQw=="
+  "resolved" "https://registry.npmjs.org/vue-moment/-/vue-moment-4.1.0.tgz"
+  "version" "4.1.0"
+  dependencies:
+    "moment" "^2.19.2"
+
 "vue-router@^3.2.0":
   "integrity" "sha1-X1Xj8lGXDjbD6NiKfNLWejUK3lw="
   "resolved" "https://registry.nlark.com/vue-router/download/vue-router-3.5.2.tgz"
@@ -8430,7 +8442,7 @@
   "resolved" "https://registry.npm.taobao.org/vue-template-es2015-compiler/download/vue-template-es2015-compiler-1.9.1.tgz"
   "version" "1.9.1"
 
-"vue@^2 || ^3.0.0-0", "vue@^2.5.17", "vue@^2.6.11", "vue@^2.6.12 || ^3.1.1", "vue@^3.0.0-0 || ^2.6.0", "vue@>= 2.5 < 3":
+"vue@^2 || ^3.0.0-0", "vue@^2.5.17", "vue@^2.6.12", "vue@^2.6.12 || ^3.1.1", "vue@^3.0.0-0 || ^2.6.0", "vue@>= 2.5 < 3", "vue@>=1.x.x":
   "integrity" "sha1-5RqlJQJQ1Wmj+606ilpofWA24jU="
   "resolved" "https://registry.nlark.com/vue/download/vue-2.6.14.tgz?cache=0&sync_timestamp=1629824307643&other_urls=https%3A%2F%2Fregistry.nlark.com%2Fvue%2Fdownload%2Fvue-2.6.14.tgz"
   "version" "2.6.14"

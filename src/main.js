@@ -12,6 +12,8 @@ import axios from "axios";
 import ECharts from 'vue-echarts'
 import { use } from 'echarts/core'
 
+import moment from 'moment'
+
 // 下面的依赖可以按照需求选择性加载
 // The following dependencies can be selectively loaded on demand
 
@@ -51,6 +53,8 @@ use([
   LineChart
 ]);
 Vue.component('v-chart', ECharts)
+
+Vue.prototype.moment = moment
 new Vue({
   router,
   render: h => h(App)

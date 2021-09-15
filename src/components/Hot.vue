@@ -18,7 +18,6 @@
             :prop="name"
             :key="name"
             :label="name"
-            width="180"
           >
           </el-table-column>
         </el-table>
@@ -36,12 +35,14 @@ export default {
   mounted() {
     const id = this.$route.params.id;
     this.$http.get("/analyze/" + id).then((response) => {
+      console.log(response);
       this.fillTable(response.data);
-      // this.fillCharts(response.data.table);
     });
   },
   methods: {
     fillTable(info) {
+      var times = ["start_ts", "end_ts"];
+      var format = "YYYY-MM-DD HH:mm";
       if (info.length < 0) {
         return;
       }
@@ -57,8 +58,16 @@ export default {
       for (const [key] of Object.entries(info[0])) {
         var obj = { name: key };
         info.forEach((value, item) => {
-          obj[value.workload] = value[key];
+          var v = value[key];
+          console.log(key);
+          console.log(times);
+          if (times.includes(key)) {
+            console.log(v);
+            v = this.moment(parseInt(v, 10) * 1000).format(format);
+          }
+          obj[value.workload] = v;
         });
+
         data.push(obj);
       }
       this.metrics = data;

@@ -14,6 +14,8 @@ import { use } from 'echarts/core'
 
 import moment from 'moment'
 
+import qs from  'qs'  
+
 // 下面的依赖可以按照需求选择性加载
 // The following dependencies can be selectively loaded on demand
 
@@ -55,6 +57,8 @@ use([
 Vue.component('v-chart', ECharts)
 
 Vue.prototype.moment = moment
+
+Vue.prototype.qs = qs
 new Vue({
   router,
   render: h => h(App)

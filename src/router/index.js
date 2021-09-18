@@ -6,9 +6,28 @@ Vue.use(VueRouter)
 
 const routes = [
   {
+    path: '/workload/:session_id',
+    name: 'Workload',
+    component: () => import(/* webpackChunkName: "home" */ '../components/Workload.vue')
+  },{
+    path: '/project/new',
+    name: 'NewProject',
+    component: () => import(/* webpackChunkName: "home" */ '../components/project/NewProject.vue')
+  },
+  {
+    path: '/session/new/:project_id',
+    name: 'NewSession',
+    component: () => import(/* webpackChunkName: "home" */ '../components/project/NewSession.vue')
+  },
+  {
     path: '/',
-    name: 'Home',
-    component: () => import(/* webpackChunkName: "home" */ '../components/Home.vue')
+    name: 'Project',
+    component: () => import(/* webpackChunkName: "home" */ '../components/project/Project.vue')
+  },
+  {
+    path: '/session/:project_id',
+    name: 'Session',
+    component: () => import(/* webpackChunkName: "home" */ '../components/project/Session.vue')
   },
   {
     path: '/hot/:id',

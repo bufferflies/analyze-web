@@ -46,15 +46,12 @@
     <el-col :span="12">
       <div>
         <el-table :data="workloads" style="width: 100%" align="center" border>
-          <el-table-column prop="id" label="ID"> </el-table-column>
-          <el-table-column
-            prop="start_ts"
-            label="create time"
-          ></el-table-column>
-          <el-table-column prop="config" label="config"> </el-table-column>
-          <el-table-column prop="metrics" label="metrics"> </el-table-column>
-          <el-table-column prop="workload" label="workload"> </el-table-column>
-          <el-table-column prop="qps" label="target object"> </el-table-column>
+          <el-table-column prop="ID" label="ID"> </el-table-column>
+          <el-table-column prop="Name" label="Name"> </el-table-column>
+          <el-table-column prop="Start" label="Start "></el-table-column>
+          <el-table-column prop="End" label="End"> </el-table-column>
+          <el-table-column prop="Config" label="Config"> </el-table-column>
+          <el-table-column prop="qps" label="qps"> </el-table-column>
           <el-table-column fixed="right" label="operate">
             <template slot-scope="scope">
               <el-button @click="detail(scope.row)" type="text" size="small">
@@ -72,7 +69,7 @@
           :page-sizes="[10, 25, 100, 200]"
           :page-size="10"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="20"
+          :total="total"
         >
         </el-pagination>
       </div>
@@ -105,30 +102,82 @@
 </template>
 
 <script>
+import qs from "qs";
 export default {
-  name: "Home",
-
+  name: "Workload",
   mounted() {
+    this.config();
     this.getAll();
     this.handlerMetrics();
   },
 
   methods: {
-    handlerMetrics() {
-      console.log("changed");
-      var data = {};
-      this.checkedMetrics.forEach((item) => {
-        data[item] = this.echartTemplate;
-        data[item].title.text = item;
-        data[item].xAxis.data = Array.apply(null, {
-          length: this.checkedMetricsSize,
-        }).map(Number.call, Number);
-        data[item].series[0].data = Array.apply(null, {
-          length: this.checkedMetricsSize,
-        }).map(Number.call, Number);
+    config() {
+      const id = this.$route.params.session_id;
+      console.log(id);
+      this.$http.get("/project/session/" + id, {}).then((response) => {
+        if (response.status != 200) {
+          console.log(response);
+          return;
+        }
       });
+    },
+    handlerMetrics(body) {
+      var params = {
+        workload: this.checkedWorkload,
+        metrics: this.checkedMetrics,
+        limit: this.checkedMetricsSize,
+      };
+      this.$http
+        .get("/analyze/getMetrics", {
+          params: params,
+          paramsSerializer: function (params) {
+            return qs.stringify(params, { arrayFormat: "repeat" });
+          },
+        })
+        .then((response) => {
+          if (response.status != 200) {
+            console.log(response);
+            return;
+          }
+          body = response.data;
+          var data = {};
 
-      this.metricsData = data;
+          for (const [key, value] of Object.entries(body)) {
+            if (value.length == 0) {
+              continue;
+            }
+            data[key] = this.echartTemplate;
+            data[key].title.text = key;
+            data[key].xAxis.data = value.map((v) => v.Start);
+            data[key].series[0].data = value.map((v) => v.Value);
+          }
+          this.metricsData = data;
+        });
+    },
+    getAll() {
+      var param = {
+        size: this.pageSize,
+        page: this.page,
+        workload: this.checkedWorkload,
+        version: this.checkedVersion,
+      };
+      this.$http
+        .get("/analyze/getAll", {
+          params: param,
+          paramsSerializer: function (params) {
+            return qs.stringify(params, { arrayFormat: "repeat" });
+          },
+        })
+        .then((response) => {
+          if (response.status != 200) {
+            return;
+          }
+          var body = response.data;
+          this.total = body.count;
+          this.workloads = body.workloads;
+          console.log(response);
+        });
     },
     detail(row) {
       console.log(row);
@@ -142,46 +191,23 @@ export default {
       this.page = page;
       this.getAll();
     },
-    getAll() {
-      var param = {
-        limit: this.pageSize,
-        page: this.page,
-        workload: this.checkedWorkload,
-        version: this.checkedVersion,
-      };
-      this.$http
-        .get("/analyze/getAll", {
-          params: param,
-        })
-        .then((response) => {
-          console.log(response);
-        });
-    },
   },
   data() {
     return {
-      workloadOptions: ["tpcc", "sysbench"],
-      checkedWorkload: "tpcc",
-      metrics: ["qps", "cpu", "mem"],
-      checkedMetrics: ["qps"],
+      workloadOptions: ["read_write", "sysbench"],
+      checkedWorkload: "read_write",
+      metrics: ["tikv_read_std_max", "tikv_read_std_mean", "mem"],
+      checkedMetrics: ["tikv_read_std_max", "cpu"],
       versions: ["v5.2", "v5.1"],
       checkedVersion: "v5.2",
 
       metricsSzie: [10, 50, 100, 500, 1000],
       checkedMetricsSize: 100,
 
-      page: 2,
+      page: 1,
       pageSize: 10,
-      workloads: [
-        {
-          id: "test",
-          start_ts: "12343",
-          config: "234",
-          metrics: "aaa",
-          workload: "sysbench",
-          qps: "123",
-        },
-      ],
+      total: 10,
+      workloads: [],
       metricsData: {},
       echartTemplate: {
         title: {

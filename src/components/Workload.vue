@@ -3,7 +3,11 @@
     <el-col :span="6">
       <div>
         <h2>workload</h2>
-        <el-select v-model="checkedWorkload" placeholder="select workload">
+        <el-select
+          v-model="checkedWorkload"
+          placeholder="select workload"
+          @change="getWorkload"
+        >
           <el-option
             v-for="item in workloadOptions"
             :key="item"
@@ -46,12 +50,15 @@
     <el-col :span="12">
       <div>
         <el-table :data="workloads" style="width: 100%" align="center" border>
-          <el-table-column prop="ID" label="ID"> </el-table-column>
           <el-table-column prop="Name" label="Name"> </el-table-column>
+          <el-table-column prop="BenchName" label="BenchName">
+          </el-table-column>
           <el-table-column prop="Start" label="Start "></el-table-column>
           <el-table-column prop="End" label="End"> </el-table-column>
           <el-table-column prop="Config" label="Config"> </el-table-column>
-          <el-table-column prop="qps" label="qps"> </el-table-column>
+          <el-table-column prop="TargetObject" label="target_object">
+          </el-table-column>
+
           <el-table-column fixed="right" label="operate">
             <template slot-scope="scope">
               <el-button @click="detail(scope.row)" type="text" size="small">
@@ -107,19 +114,41 @@ export default {
   name: "Workload",
   mounted() {
     this.config();
-    this.getAll();
-    this.handlerMetrics();
+    this.workload();
+
+    // this.handlerMetrics();
   },
 
   methods: {
     config() {
       const id = this.$route.params.session_id;
-      console.log(id);
       this.$http.get("/project/session/" + id, {}).then((response) => {
         if (response.status != 200) {
           console.log(response);
           return;
         }
+        var data = response.data;
+        this.targetMetrics = data.TargetObject;
+        this.metrics = data.Object.split(",");
+        this.checkedMetrics = this.metrics;
+      });
+    },
+    workload() {
+      const id = this.$route.params.session_id;
+      this.$http.get("/analyze/config/" + id, {}).then((response) => {
+        if (response.status != 200) {
+          console.log(response);
+          return;
+        }
+        var data = response.data;
+        var names = [];
+        data.forEach((item) => {
+          names.push(item.Name);
+        });
+        this.workloadOptions = names;
+        this.checkedWorkloa = this.workloadOptions[0];
+        this.getWorkload();
+        this.handlerMetrics();
       });
     },
     handlerMetrics(body) {
@@ -128,8 +157,9 @@ export default {
         metrics: this.checkedMetrics,
         limit: this.checkedMetricsSize,
       };
+      const id = this.$route.params.session_id;
       this.$http
-        .get("/analyze/getMetrics", {
+        .get("/analyze/metrics/" + id, {
           params: params,
           paramsSerializer: function (params) {
             return qs.stringify(params, { arrayFormat: "repeat" });
@@ -140,7 +170,8 @@ export default {
             console.log(response);
             return;
           }
-          body = response.data;
+          console.log(response);
+          var body = response.data;
           var data = {};
 
           for (const [key, value] of Object.entries(body)) {
@@ -155,7 +186,8 @@ export default {
           this.metricsData = data;
         });
     },
-    getAll() {
+    getWorkload() {
+      const id = this.$route.params.session_id;
       var param = {
         size: this.pageSize,
         page: this.page,
@@ -163,7 +195,7 @@ export default {
         version: this.checkedVersion,
       };
       this.$http
-        .get("/analyze/getAll", {
+        .get("/analyze/workload/" + id, {
           params: param,
           paramsSerializer: function (params) {
             return qs.stringify(params, { arrayFormat: "repeat" });
@@ -176,12 +208,11 @@ export default {
           var body = response.data;
           this.total = body.count;
           this.workloads = body.workloads;
-          console.log(response);
         });
     },
     detail(row) {
-      console.log(row);
-      this.$router.push({ path: "/hot/" + row.id });
+      const id = this.$route.params.session_id;
+      this.$router.push({ path: "/hot/" + id + "/" + row.BenchName });
     },
     handlerSize(size) {
       this.pageSize = size;
@@ -198,6 +229,7 @@ export default {
       checkedWorkload: "read_write",
       metrics: ["tikv_read_std_max", "tikv_read_std_mean", "mem"],
       checkedMetrics: ["tikv_read_std_max", "cpu"],
+      targetMetrics: "cpu",
       versions: ["v5.2", "v5.1"],
       checkedVersion: "v5.2",
 

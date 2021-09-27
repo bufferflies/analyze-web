@@ -95,12 +95,36 @@ export default {
       targetObject: "",
       metrics: [
         {
-          value: "test",
-          label: "test",
+          value: "tikv_cpu_mean_max",
+          label: "tikv_cpu_mean_max",
         },
         {
-          value: "fault",
-          label: "fault",
+          value: "tikv_read_mean_max",
+          label: "tikv_read_mean_max",
+        },
+        {
+          value: "tikv_read_std_min",
+          label: "tikv_read_std_min",
+        },
+        {
+          value: "tikv_read_mean_min",
+          label: "tikv_read_mean_min",
+        },
+        {
+          value: "tikv_cpu_std_max",
+          label: "tikv_cpu_std_max",
+        },
+        {
+          value: "tikv_cpu_mean_mean",
+          label: "tikv_cpu_mean_mean",
+        },
+        {
+          value: "tikv_cpu_std_min",
+          label: "tikv_cpu_std_min",
+        },
+        {
+          value: "tikv_read_std_std",
+          label: "tikv_read_std_std",
         },
       ],
     };

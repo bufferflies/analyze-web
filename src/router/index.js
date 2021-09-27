@@ -30,7 +30,7 @@ const routes = [
     component: () => import(/* webpackChunkName: "home" */ '../components/project/Session.vue')
   },
   {
-    path: '/hot/:id',
+    path: '/hot/:session_id/:name',
     name: 'Hot',
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route

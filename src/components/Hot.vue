@@ -33,11 +33,13 @@ export default {
   name: "hot",
 
   mounted() {
-    const id = this.$route.params.id;
-    this.$http.get("/analyze/" + id).then((response) => {
-      console.log(response);
-      this.fillTable(response.data);
-    });
+    const session_id = this.$route.params.session_id;
+    const name = this.$route.params.name;
+    this.$http
+      .get("/analyze/bench/" + session_id + "/" + name)
+      .then((response) => {
+        this.fillTable(response.data);
+      });
   },
   methods: {
     fillTable(info) {
@@ -48,24 +50,23 @@ export default {
       }
       var workloads = [];
       var checkloads = [];
-      info.forEach((value, item) => {
-        Object.assign(value, value.metrics);
-        delete value.metrics;
-        workloads.push({ name: value.workload });
-        checkloads.push(value.workload);
+      info.forEach((value) => {
+        var dict = {};
+        value.Metrics.forEach((item) => {
+          dict[item.Key] = item.Value;
+        });
+        Object.assign(value, dict);
+        delete value.Metrics;
+        var obj = { name: value.Name };
+        workloads.push(obj);
+        checkloads.push(value.Name);
       });
       var data = [];
+
       for (const [key] of Object.entries(info[0])) {
         var obj = { name: key };
-        info.forEach((value, item) => {
-          var v = value[key];
-          console.log(key);
-          console.log(times);
-          if (times.includes(key)) {
-            console.log(v);
-            v = this.moment(parseInt(v, 10) * 1000).format(format);
-          }
-          obj[value.workload] = v;
+        info.forEach((value) => {
+          obj[value.Name] = value[key];
         });
 
         data.push(obj);
@@ -74,49 +75,10 @@ export default {
       this.workloads = workloads;
       this.checkloads = checkloads;
     },
-    fillCharts(table) {
-      var length = 0;
-      var legend = [];
-      var index = 0;
-      for (var i in table) {
-        if (table[i].length > length) {
-          length = table[i].length;
-        }
-        legend[index] = i;
-        this.option.series[index] = {
-          name: i,
-          data: table[i],
-          type: "line",
-        };
-        index++;
-      }
-      var x = [];
-      for (var i = 0; i < length; i++) {
-        x[i] = i;
-      }
-      this.option.xAxis.data = x;
-      this.option.legend.data = legend;
-    },
   },
   data() {
     return {
       info: "null",
-
-      option: {
-        tooltip: {
-          trigger: "axis",
-        },
-        legend: {
-          data: [],
-        },
-        xAxis: {
-          type: "category",
-        },
-        yAxis: {
-          type: "value",
-        },
-        series: [],
-      },
       checkloads: ["test"],
       workloads: [{ name: "test" }, { name: "111" }],
       metrics: [],

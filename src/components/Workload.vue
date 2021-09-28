@@ -16,6 +16,7 @@
           >
           </el-option>
         </el-select>
+        <el-button type="danger" @click="removeWorkLoad()">Delete</el-button>
       </div>
       <div>
         <h2>version</h2>
@@ -50,6 +51,7 @@
     <el-col :span="12">
       <div>
         <el-table :data="workloads" style="width: 100%" align="center" border>
+          <el-table-column prop="ID" label="Id"> </el-table-column>
           <el-table-column prop="Name" label="Name"> </el-table-column>
           <el-table-column prop="BenchName" label="BenchName">
           </el-table-column>
@@ -63,6 +65,9 @@
             <template slot-scope="scope">
               <el-button @click="detail(scope.row)" type="text" size="small">
                 detail
+              </el-button>
+              <el-button @click="remove(scope.row)" type="text" size="small">
+                delete
               </el-button>
             </template>
           </el-table-column>
@@ -113,14 +118,12 @@ import qs from "qs";
 export default {
   name: "Workload",
   mounted() {
-    this.config();
+    this.session();
     this.workload();
-
-    // this.handlerMetrics();
   },
 
   methods: {
-    config() {
+    session() {
       const id = this.$route.params.session_id;
       this.$http.get("/project/session/" + id, {}).then((response) => {
         if (response.status != 200) {
@@ -128,15 +131,16 @@ export default {
           return;
         }
         var data = response.data;
-        this.targetMetrics = data.TargetObject;
-        this.metrics = data.Object.split(",");
-        this.checkedMetrics = this.metrics;
+
+        this.metrics = data.object.split(",");
       });
     },
+
     workload() {
       const id = this.$route.params.session_id;
-      this.$http.get("/analyze/config/" + id, {}).then((response) => {
-        if (response.status != 200) {
+      this.$http.get("/analyze/config/" + id).then((response) => {
+        console.log(response);
+        if (response.status != 200 || response.data.length == 0) {
           console.log(response);
           return;
         }
@@ -146,7 +150,7 @@ export default {
           names.push(item.Name);
         });
         this.workloadOptions = names;
-        this.checkedWorkloa = this.workloadOptions[0];
+        this.checkedWorkload = this.workloadOptions[0];
         this.getWorkload();
         this.handlerMetrics();
       });
@@ -170,7 +174,6 @@ export default {
             console.log(response);
             return;
           }
-          console.log(response);
           var body = response.data;
           var data = {};
 
@@ -182,6 +185,7 @@ export default {
             data[key].title.text = key;
             data[key].xAxis.data = value.map((v) => v.Start);
             data[key].series[0].data = value.map((v) => v.Value);
+            data[key].series[0].name = key;
           }
           this.metricsData = data;
         });
@@ -213,6 +217,27 @@ export default {
     detail(row) {
       const id = this.$route.params.session_id;
       this.$router.push({ path: "/hot/" + id + "/" + row.BenchName });
+    },
+    removeWorkLoad() {
+      const id = this.$route.params.session_id;
+      this.$http
+        .delete("/analyze/session/" + id, {
+          params: { workload_name: this.checkedWorkload },
+        })
+        .then((response) => {
+          if (response.status != 200) {
+            return;
+          }
+          this.workload();
+        });
+    },
+    remove(row) {
+      this.$http.delete("/analyze/workload/" + row.ID).then((response) => {
+        if (response.status != 200) {
+          return;
+        }
+        this.workload();
+      });
     },
     handlerSize(size) {
       this.pageSize = size;
@@ -276,5 +301,9 @@ x-vue-echarts {
   width: 100%;
   height: 400px;
   display: block;
+}
+.el-checkbox-width {
+  width: 100px;
+  height: 25px;
 }
 </style>>

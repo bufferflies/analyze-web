@@ -20,6 +20,11 @@ const routes = [
     component: () => import(/* webpackChunkName: "home" */ '../components/project/NewSession.vue')
   },
   {
+    path: '/session/edit/:project_id/:session_id',
+    name: 'NewSession',
+    component: () => import(/* webpackChunkName: "home" */ '../components/project/NewSession.vue')
+  },
+  {
     path: '/',
     name: 'Project',
     component: () => import(/* webpackChunkName: "home" */ '../components/project/Project.vue')

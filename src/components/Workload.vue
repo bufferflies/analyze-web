@@ -6,7 +6,7 @@
         <el-select
           v-model="checkedWorkload"
           placeholder="select workload"
-          @change="getWorkload"
+          @change="handleCheckWorkload"
         >
           <el-option
             v-for="item in workloadOptions"
@@ -119,7 +119,6 @@ export default {
   name: "Workload",
   mounted() {
     this.session();
-    this.workload();
   },
 
   methods: {
@@ -131,15 +130,21 @@ export default {
           return;
         }
         var data = response.data;
-
         this.metrics = data.object.split(",");
+        this.refreshWorkloadName();
       });
     },
+    handleCheckWorkload() {
+      this.refreshWorkloads();
+      this.refreshMetrics();
+    },
+    handlerMetrics() {
+      this.refreshMetrics();
+    },
 
-    workload() {
+    refreshWorkloadName() {
       const id = this.$route.params.session_id;
       this.$http.get("/analyze/config/" + id).then((response) => {
-        console.log(response);
         if (response.status != 200 || response.data.length == 0) {
           console.log(response);
           return;
@@ -151,11 +156,11 @@ export default {
         });
         this.workloadOptions = names;
         this.checkedWorkload = this.workloadOptions[0];
-        this.getWorkload();
-        this.handlerMetrics();
+        this.refreshWorkloads();
+        this.refreshMetrics();
       });
     },
-    handlerMetrics(body) {
+    refreshMetrics() {
       var params = {
         workload: this.checkedWorkload,
         metrics: this.checkedMetrics,
@@ -181,16 +186,18 @@ export default {
             if (value.length == 0) {
               continue;
             }
-            data[key] = this.echartTemplate;
-            data[key].title.text = key;
-            data[key].xAxis.data = value.map((v) => v.Start);
-            data[key].series[0].data = value.map((v) => v.Value);
-            data[key].series[0].name = key;
+
+            var echart = JSON.parse(JSON.stringify(this.echartTemplate));
+            echart.title.text = key;
+            echart.xAxis.data = value.map((v) => v.Start);
+            echart.series[0].data = value.map((v) => v.Value);
+            echart.series[0].name = key;
+            data[key] = echart;
           }
           this.metricsData = data;
         });
     },
-    getWorkload() {
+    refreshWorkloads() {
       const id = this.$route.params.session_id;
       var param = {
         size: this.pageSize,
@@ -228,7 +235,8 @@ export default {
           if (response.status != 200) {
             return;
           }
-          this.workload();
+
+          this.refreshWorkloads();
         });
     },
     remove(row) {
@@ -236,24 +244,24 @@ export default {
         if (response.status != 200) {
           return;
         }
-        this.workload();
+        this.refreshWorkloadName();
       });
     },
     handlerSize(size) {
       this.pageSize = size;
-      this.getAll();
+      this.refreshWorkloads();
     },
     handlerPage(page) {
       this.page = page;
-      this.getAll();
+      this.refreshWorkloads();
     },
   },
   data() {
     return {
       workloadOptions: ["read_write", "sysbench"],
       checkedWorkload: "read_write",
-      metrics: ["tikv_read_std_max", "tikv_read_std_mean", "mem"],
-      checkedMetrics: ["tikv_read_std_max", "cpu"],
+      metrics: [],
+      checkedMetrics: [],
       targetMetrics: "cpu",
       versions: ["v5.2", "v5.1"],
       checkedVersion: "v5.2",

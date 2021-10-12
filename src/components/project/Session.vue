@@ -48,7 +48,6 @@ export default {
     },
     edit(row) {
       const id = this.$route.params.project_id;
-      console.log(row);
       this.$router.push({ path: "/session/edit/" + id + "/" + row.id });
     },
     detail(row) {

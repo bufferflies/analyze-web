@@ -1,35 +1,70 @@
 <template>
   <el-row type="flex" class="row-bg" justify="center">
-    <el-col :span="6"
+    <el-col :span="4"
       ><div class="grid-content bg-purple">
+        <el-checkbox v-model="checkAll" @change="handleCheckAll">
+          all
+        </el-checkbox>
         <el-checkbox-group v-model="checkloads">
-          <el-checkbox
-            v-for="workload in workloads"
-            :label="workload.name"
-            :key="workload.name"
-            >{{ workload.name }}
-          </el-checkbox>
+          <el-row>
+            <el-checkbox
+              v-for="workload in workloads"
+              :label="workload.name"
+              :key="workload.name"
+              @change="handlerChanged"
+            >
+              <template slot-scope="scope">
+                <h2>
+                  {{ scope.row }}
+                </h2>
+              </template>
+            </el-checkbox>
+          </el-row>
         </el-checkbox-group>
       </div></el-col
     >
-    <el-col :span="16">
+    <el-col :span="18">
       <div>
         <el-table :data="metrics" border>
           <el-table-column prop="name" label="name" />
           <el-table-column
-            v-for="{ name } in workloads"
+            v-for="{ name } in showloads"
             :prop="name"
             :key="name"
             :label="name"
           >
-            <!-- <template slot-scope="scope">
+            <template slot-scope="scope">
               <div v-if="scope.row.name == 'Start'">
-                <el-link> {{ scope.row["read_write-no-schedule"] }}</el-link>
+                <el-link type="primary" :href="link">
+                  {{ scope.row[scope.column.property] }}
+                </el-link>
               </div>
-              <div v-else-if="scope.row.name != 'Start'">
-                {{ scope.row["name"] }}
+              <div
+                v-else-if="
+                  scope.row.name == 'Cmd' || scope.row.name == 'Config'
+                "
+              >
+                <el-popover
+                  placement="bottom"
+                  title="cmd"
+                  trigger="click"
+                  width="200"
+                  :content="scope.row[scope.column.property]"
+                >
+                  <el-button
+                    type="info"
+                    icon="el-icon-message"
+                    circle
+                    slot="reference"
+                    size="mini"
+                    >detail</el-button
+                  >
+                </el-popover>
               </div>
-            </template> -->
+              <div v-else>
+                {{ scope.row[scope.column.property] }}
+              </div>
+            </template>
           </el-table-column>
         </el-table>
       </div>
@@ -46,6 +81,20 @@ export default {
     this.getSession();
   },
   methods: {
+    handleCheckAll() {
+      if (this.checkAll) {
+        this.checkloads = this.workloads.map((w) => w.name);
+      } else {
+        this.checkloads = [];
+      }
+      this.handlerChanged();
+    },
+    handlerChanged() {
+      var showloads = this.workloads.filter((metric) =>
+        this.checkloads.includes(metric.name)
+      );
+      this.showloads = showloads;
+    },
     getSession() {
       const id = this.$route.params.session_id;
       this.$http.get("/project/session/" + id, {}).then((response) => {
@@ -81,7 +130,6 @@ export default {
             checkloads.push(value.Name);
           });
           var data = [];
-
           for (const [key] of Object.entries(body[0])) {
             if (this.excludeName.includes(key)) {
               continue;
@@ -93,9 +141,11 @@ export default {
 
             data.push(obj);
           }
+
           this.metrics = data;
           this.workloads = workloads;
           this.checkloads = checkloads;
+          this.showloads = workloads;
         });
     },
   },
@@ -104,15 +154,28 @@ export default {
       session: null,
       checkloads: ["test"],
       workloads: [{ name: "test" }, { name: "111" }],
+      showloads: [],
       metrics: [],
-      excludeName: ["BenchName", "SessionID", "Version"],
+      excludeName: ["BenchName", "SessionID", "Version", "Name"],
+      checkAll: true,
     };
+  },
+  computed: {
+    link: function () {
+      var url = this.session.grafana_address;
+      return url;
+    },
   },
 };
 </script>
 
 <style scoped>
-.chart {
-  height: 400px;
+.el-checkbox,
+.el-checkbox__input {
+  display: flex;
+  position: relative;
+  white-space: nowrap;
+  flex-direction: row;
+  align-items: flex-end;
 }
 </style>

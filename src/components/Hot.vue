@@ -25,8 +25,14 @@
     >
     <el-col :span="18">
       <div>
-        <el-table :data="metrics" border>
-          <el-table-column prop="name" label="name" />
+        <el-table
+          :data="metrics"
+          border
+          max-height="1000"
+          :default-sort="{ prop: 'name', order: 'ascending' }"
+          :cell-style="cellStyle"
+        >
+          <el-table-column fixed sortable prop="name" label="name" />
           <el-table-column
             v-for="{ name } in showloads"
             :prop="name"
@@ -61,8 +67,19 @@
                   >
                 </el-popover>
               </div>
+              <div
+                v-else-if="scope.row.name == 'End' || scope.row.name == 'ID'"
+              >
+                {{ scope.row[scope.column.property] }}
+              </div>
               <div v-else>
                 {{ scope.row[scope.column.property] }}
+                <nobr
+                  style="color: red"
+                  v-if="!scope.column.property.endsWith('no-schedule')"
+                >
+                  ({{ scope.row[scope.column.property + "-delta"] }})
+                </nobr>
               </div>
             </template>
           </el-table-column>
@@ -130,14 +147,28 @@ export default {
             checkloads.push(value.Name);
           });
           var data = [];
+          // fill data
           for (const [key] of Object.entries(body[0])) {
             if (this.excludeName.includes(key)) {
               continue;
             }
             var obj = { name: key };
+
             body.forEach((value) => {
               obj[value.Name] = value[key];
             });
+            if (!this.noCompareMetrics.includes(key)) {
+              body.forEach((value) => {
+                if (!value.Name.endsWith("no-schedule")) {
+                  var base = parseFloat(obj[value.Name + "-no-schedule"]);
+                  if (base != 0) {
+                    var delta = ((value[key] - base) / base).toFixed(2);
+                    obj[value.Name + "-delta"] = delta;
+                  }
+                }
+                obj[value.Name] = parseFloat(value[key]).toFixed(2);
+              });
+            }
 
             data.push(obj);
           }
@@ -148,15 +179,21 @@ export default {
           this.showloads = workloads;
         });
     },
+    cellStyle({ row, column, rowIndex, columnIndex }) {
+      if (!column.property.endsWith("no-schedule") && columnIndex !== 0) {
+        return "background:#f0f9eb";
+      }
+    },
   },
   data() {
     return {
       session: null,
       checkloads: ["test"],
-      workloads: [{ name: "test" }, { name: "111" }],
+      workloads: [],
       showloads: [],
       metrics: [],
       excludeName: ["BenchName", "SessionID", "Version", "Name"],
+      noCompareMetrics: ["Cmd", "Config", "End", "ID", "Start"],
       checkAll: true,
     };
   },
@@ -169,7 +206,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style >
 .el-checkbox,
 .el-checkbox__input {
   display: flex;
@@ -177,5 +214,8 @@ export default {
   white-space: nowrap;
   flex-direction: row;
   align-items: flex-end;
+}
+.redClass {
+  background: red;
 }
 </style>

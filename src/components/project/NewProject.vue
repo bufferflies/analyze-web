@@ -50,13 +50,9 @@ export default {
             name: this.name,
             description: this.description,
           },
-          paramsSerializer: function (params) {
-            return qs.stringify(params, { arrayFormat: "repeat" });
-          },
         })
         .then((response) => {
-          this.fillTable(response.data);
-          this.$router.push({ path: "/project" });
+          this.$router.push({ path: "/" });
         });
     },
   },

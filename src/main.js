@@ -16,8 +16,7 @@ import moment from 'moment'
 
 import qs from  'qs'  
 
-// 下面的依赖可以按照需求选择性加载
-// The following dependencies can be selectively loaded on demand
+
 
 Vue.use(ElementUI);
 
@@ -27,15 +26,14 @@ axios.defaults.baseURL=process.env.VUE_APP_URL
 Vue.config.productionTip = false
 
 
-
 // import ECharts modules manually to reduce bundle size
 import {
   CanvasRenderer
 } from 'echarts/renderers'
 import {
   BarChart,
-  PieChart,
   LineChart,
+  PieChart,
 } from 'echarts/charts'
 import {
   GridComponent,
@@ -56,9 +54,9 @@ use([
 ]);
 Vue.component('v-chart', ECharts)
 
-Vue.prototype.moment = moment
+Vue.prototype.$moment = moment
 
-Vue.prototype.qs = qs
+Vue.prototype.$qs = qs
 new Vue({
   router,
   render: h => h(App)

@@ -41,7 +41,15 @@
           >
             <template slot-scope="scope">
               <div v-if="scope.row.name == 'Start'">
-                <el-link type="primary" :href="link">
+                <el-link
+                  type="primary"
+                  @click="
+                    open(
+                      scope.row[scope.column.property],
+                      scope.column.property
+                    )
+                  "
+                >
                   {{ scope.row[scope.column.property] }}
                 </el-link>
               </div>
@@ -67,9 +75,7 @@
                   >
                 </el-popover>
               </div>
-              <div
-                v-else-if="scope.row.name == 'End' || scope.row.name == 'ID'"
-              >
+              <div v-else-if="scope.row.name == 'ID'">
                 {{ scope.row[scope.column.property] }}
               </div>
               <div v-else>
@@ -120,7 +126,9 @@ export default {
           return;
         }
         this.session = response.data;
+        this.uri();
         this.fillTable();
+        this.uri();
       });
     },
     fillTable() {
@@ -156,6 +164,14 @@ export default {
 
             body.forEach((value) => {
               obj[value.Name] = value[key];
+              if (key === "Start") {
+                var start = this.$moment.parseZone(value[key]).add(8, "h");
+                var end = this.$moment.parseZone(value["End"]).add(8, "h");
+                obj[value.Name] =
+                  start.format("YYYY-MM-DD HH:mm:ss") +
+                  "~" +
+                  end.format("YYYY-MM-DD HH:mm:ss");
+              }
             });
             if (!this.noCompareMetrics.includes(key)) {
               body.forEach((value) => {
@@ -184,6 +200,70 @@ export default {
         return "background:#f0f9eb";
       }
     },
+    open(data, name) {
+      this.$confirm("", "redirect to grafana", {
+        confirmButtonText: "tikv",
+        cancelButtonText: "pd",
+      })
+        .then(() => {
+          var url = this.link(data, name, this.tikvUrl);
+          alert(url);
+          windows.location.href = url;
+        })
+        .catch(() => {
+          var url = this.link(data, name, this.pdUrl);
+          alert(url);
+          window.location.href = url;
+        });
+    },
+    link(data, name, url) {
+      console.log(data, name, url);
+      var duration = data.split("~");
+      if (duration.length < 2) {
+        console.log("data is illegal", data);
+      }
+
+      var from = this.$moment(duration[0]).unix() * 1000;
+      var to = this.$moment(duration[1]).unix() * 1000;
+      var searchParams = new URLSearchParams();
+      searchParams.set("orgId", 1);
+      searchParams.set("from", from);
+      searchParams.set("to", to);
+      searchParams.set("name", name);
+
+      var url =
+        this.session.grafana_address +
+        "/" +
+        url +
+        "?" +
+        searchParams.toString();
+      return url;
+    },
+    uri() {
+      const url = this.session.grafana_address;
+      const authorization = this.session.grafana_authorization;
+      this.$http
+        .get("/proxy/api/search", {
+          headers: {
+            Authorization: authorization,
+            Target: this.session.grafana_address,
+          },
+          params: {},
+        })
+        .then((response) => {
+          var data = response.data;
+          const pdGrafana = data.filter((d) => d.title.endsWith("Cluster-PD"));
+          const tikvGrafana = data.filter((d) =>
+            d.title.endsWith("TiKV-Details")
+          );
+          if (pdGrafana.length > 0) {
+            this.pdUrl = pdGrafana[0].url;
+          }
+          if (tikvGrafana.length > 0) {
+            this.tikvUrl = tikvGrafana[0].url;
+          }
+        });
+    },
   },
   data() {
     return {
@@ -192,16 +272,12 @@ export default {
       workloads: [],
       showloads: [],
       metrics: [],
-      excludeName: ["BenchName", "SessionID", "Version", "Name"],
+      excludeName: ["BenchName", "SessionID", "Version", "Name", "End"],
       noCompareMetrics: ["Cmd", "Config", "End", "ID", "Start"],
       checkAll: true,
+      pdUrl: "",
+      tikvUrl: "",
     };
-  },
-  computed: {
-    link: function () {
-      var url = this.session.grafana_address;
-      return url;
-    },
   },
 };
 </script>

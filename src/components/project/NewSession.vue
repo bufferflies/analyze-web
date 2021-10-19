@@ -44,6 +44,14 @@
           <template slot="prepend">grafana address</template>
         </el-input>
       </el-row>
+      <el-row style="margin: 20px 0">
+        <el-input
+          placeholder="enter grafana Authorization,like  Bearer eyJrIjoiZEZDNHh2NnYyMlg1enRPOGpmd1QyaGpKRmdUcUY3bloiLCJuIjoicmVncmVzc2lvbiIsImlkIjox11=="
+          v-model="grafanaAuthorization"
+        >
+          <template slot="prepend">grafana Authorization</template>
+        </el-input>
+      </el-row>
       <div style="margin: 20px 0"></div>
 
       <el-transfer
@@ -125,11 +133,12 @@ export default {
         this.tidbAddress = data.tidb_address;
         this.promAddress = data.prom_address;
         this.grafanaAddress = data.grafana_address;
+        this.grafanaAuthorization = data.grafana_authorization;
       });
     },
     save() {
       var data = {
-        id: parseInt(this.$route.params.session_id),
+        id: parseInt(this.$route.params.session_id, 10),
         pid: parseInt(this.$route.params.project_id, 10),
         name: this.name,
         description: this.description,
@@ -139,6 +148,7 @@ export default {
         tidb_address: this.tidbAddress,
         grafana_address: this.grafanaAddress,
         prom_address: this.promAddress,
+        grafana_authorization: this.grafanaAuthorization,
       };
       this.$http.post("/project/session/new", data).then(() => {
         this.cancel();
@@ -159,6 +169,7 @@ export default {
       tidbAddress: "",
       promAddress: "",
       grafanaAddress: "",
+      grafanaAuthorization: "",
       newMetrics: "",
 
       metrics: [

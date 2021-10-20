@@ -92,7 +92,16 @@
         </el-table>
       </div>
     </el-col>
+
     <el-col :span="2"><div class="grid-content bg-purple"></div></el-col>
+    <el-dialog title="notify" :visible.sync="dialogVisible" width="30%">
+      <span>it will redirect to grafana</span>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">cancel</el-button>
+        <el-button @click="redirect(dialogTikvUrl)">tikv</el-button>
+        <el-button @click="redirect(dialogPdUrl)">pd</el-button>
+      </span>
+    </el-dialog>
   </el-row>
 </template>
 
@@ -128,7 +137,6 @@ export default {
         this.session = response.data;
         this.uri();
         this.fillTable();
-        this.uri();
       });
     },
     fillTable() {
@@ -200,24 +208,16 @@ export default {
         return "background:#f0f9eb";
       }
     },
+    redirect(url) {
+      this.dialogVisible = false;
+      window.open(url);
+    },
     open(data, name) {
-      this.$confirm("", "redirect to grafana", {
-        confirmButtonText: "tikv",
-        cancelButtonText: "pd",
-      })
-        .then(() => {
-          var url = this.link(data, name, this.tikvUrl);
-          alert(url);
-          windows.location.href = url;
-        })
-        .catch(() => {
-          var url = this.link(data, name, this.pdUrl);
-          alert(url);
-          window.location.href = url;
-        });
+      this.dialogPdUrl = this.link(data, name, this.pdUrl);
+      this.dialogTikvUrl = this.link(data, name, this.tikvUrl);
+      this.dialogVisible = true;
     },
     link(data, name, url) {
-      console.log(data, name, url);
       var duration = data.split("~");
       if (duration.length < 2) {
         console.log("data is illegal", data);
@@ -242,6 +242,24 @@ export default {
     uri() {
       const url = this.session.grafana_address;
       const authorization = this.session.grafana_authorization;
+      if (url === "") {
+        this.$notify({
+          title: "notify",
+          duration: 0,
+          type: "warning",
+          message: "grafana url  may not set",
+        });
+        return;
+      }
+      if (authorization === "") {
+        this.$message({
+          title: "notify",
+          duration: 0,
+          type: "warning",
+          message: "grafana authorization  may not set",
+        });
+        return;
+      }
       this.$http
         .get("/proxy/api/search", {
           headers: {
@@ -275,8 +293,13 @@ export default {
       excludeName: ["BenchName", "SessionID", "Version", "Name", "End"],
       noCompareMetrics: ["Cmd", "Config", "End", "ID", "Start"],
       checkAll: true,
+
       pdUrl: "",
       tikvUrl: "",
+
+      dialogVisible: false,
+      dialogPdUrl: "",
+      dialogTikvUrl: "",
     };
   },
 };

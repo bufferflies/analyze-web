@@ -1,12 +1,30 @@
 <template>
   <el-row type="flex" class="row-bg" justify="center">
     <el-col :span="6">
+       <div>
+        <h2>metrics</h2>
+        <el-checkbox-group
+          v-model="checkedMetrics"
+          border
+          @change="handlerMetrics"
+        >
+          <el-checkbox
+            v-for="item in metrics"
+            :label="item"
+            :key="item"
+            style="display: block"
+          >
+            {{ item }}
+          </el-checkbox>
+        </el-checkbox-group>
+      </div>
       <div>
         <h2>workload</h2>
         <el-select
           v-model="checkedWorkload"
           placeholder="select workload"
           @change="handleCheckWorkload"
+          filterable
         >
           <el-option
             v-for="item in workloadOptions"
@@ -31,24 +49,31 @@
         </el-select>
       </div>
       <div>
-        <h2>metrics</h2>
-        <el-checkbox-group
-          v-model="checkedMetrics"
-          border
-          @change="handlerMetrics"
-        >
-          <el-checkbox
-            v-for="item in metrics"
-            :label="item"
-            :key="item"
-            style="display: block"
-          >
-            {{ item }}
-          </el-checkbox>
-        </el-checkbox-group>
+        <h4>
+          show the last
+          <el-select v-model="checkedMetricsSize" @change="handlerMetrics">
+            <el-option
+              v-for="size in metricsSzie"
+              :key="size"
+              :label="size"
+              :value="size"
+            >
+              {{ size }}
+            </el-option>
+          </el-select>
+          result
+        </h4>
       </div>
+     
     </el-col>
     <el-col :span="12">
+      <v-chart
+        class="chart"
+        v-for="item in checkedMetrics"
+        :option="metricsData[item]"
+        :key="item"
+        height="100px"
+      />
       <div>
         <el-table :data="workloads" style="width: 100%" align="center" border>
           <el-table-column prop="ID" label="Id"> </el-table-column>
@@ -85,29 +110,7 @@
         >
         </el-pagination>
       </div>
-      <div>
-        <h4>
-          show the last
-          <el-select v-model="checkedMetricsSize" @change="handlerMetrics">
-            <el-option
-              v-for="size in metricsSzie"
-              :key="size"
-              :label="size"
-              :value="size"
-            >
-              {{ size }}
-            </el-option>
-          </el-select>
-          result
-        </h4>
-      </div>
-      <v-chart
-        class="chart"
-        v-for="item in checkedMetrics"
-        :option="metricsData[item]"
-        :key="item"
-        height="100px"
-      />
+      
     </el-col>
     <el-col :span="6"><div></div></el-col>
   </el-row>
@@ -131,6 +134,7 @@ export default {
         }
         var data = response.data;
         this.metrics = data.object.split(",");
+        this.checkedMetrics=["tidb_command_per_second","tikv_cpu_avg","tikv_cpu_std","tikv_cpu_std/avg"];
         this.refreshWorkloadName();
       });
     },
@@ -244,7 +248,7 @@ export default {
         if (response.status != 200) {
           return;
         }
-        this.refreshWorkloadName();
+        this.refreshWorkloads();
       });
     },
     handlerSize(size) {

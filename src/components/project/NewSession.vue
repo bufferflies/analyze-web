@@ -174,36 +174,87 @@ export default {
 
       metrics: [
         {
-          value: "tikv_cpu_mean_max",
-          label: "tikv_cpu_mean_max",
+          value: "tikv_cpu_avg",
+          label: "tikv_cpu_avg",
         },
         {
-          value: "tikv_read_mean_max",
-          label: "tikv_read_mean_max",
+          value: "tikv_cpu_std",
+          label: "tikv_cpu_std",
         },
         {
-          value: "tikv_read_std_min",
-          label: "tikv_read_std_min",
+          value: "tikv_cpu_std/avg",
+          label: "tikv_cpu_std/avg",
         },
         {
-          value: "tikv_read_mean_min",
-          label: "tikv_read_mean_min",
+          value: "tidb_command_per_second",
+          label: "tidb_command_per_second",
         },
         {
-          value: "tikv_cpu_std_max",
-          label: "tikv_cpu_std_max",
+          value: "tidb_duration_P80",
+          label: "tidb_duration_P80",
         },
         {
-          value: "tikv_cpu_mean_mean",
-          label: "tikv_cpu_mean_mean",
+          value: "tidb_duration_P999",
+          label: "tidb_duration_P999",
         },
         {
-          value: "tikv_cpu_std_min",
-          label: "tikv_cpu_std_min",
+          value: "store_write_query_avg",
+          label: "store_write_query_avg",
         },
         {
-          value: "tikv_read_std_std",
-          label: "tikv_read_std_std",
+          value: "store_write_query_std",
+          label: "store_write_query_std",
+        },{
+          value: "store_write_rate_bytes_avg",
+          label: "store_write_rate_bytes_avg",
+        },
+        {
+          value: "store_write_rate_bytes_std",
+          label: "store_write_rate_bytes_std",
+        },
+        {
+          value: "store_write_rate_bytes_std/avg",
+          label: "store_write_rate_bytes_std/avg",
+        },{
+          value: "store_write_rate_keys_avg",
+          label: "store_write_rate_keys_avg",
+        },
+        {
+          value: "store_write_rate_keys_std",
+          label: "store_write_rate_keys_std",
+        },
+        {
+          value: "store_write_rate_keys_std/avg",
+          label: "store_write_rate_keys_std/avg",
+        },{
+          value: "store_read_query_avg",
+          label: "store_read_query_avg",
+        },
+        {
+          value: "store_read_query_std",
+          label: "store_read_query_std",
+        },{
+          value: "store_read_rate_bytes_avg",
+          label: "store_read_rate_bytes_avg",
+        },
+        {
+          value: "store_read_rate_bytes_std",
+          label: "store_read_rate_bytes_std",
+        },
+        {
+          value: "store_read_rate_bytes_std/avg",
+          label: "store_read_rate_bytes_std/avg",
+        },{
+          value: "store_read_rate_keys_avg",
+          label: "store_read_rate_keys_avg",
+        },
+        {
+          value: "store_read_rate_keys_std",
+          label: "store_read_rate_keys_std",
+        },
+        {
+          value: "store_read_rate_keys_std/avg",
+          label: "store_read_rate_keys_std/avg",
         },
       ],
     };

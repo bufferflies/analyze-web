@@ -1,7 +1,7 @@
 <template>
   <el-row type="flex" class="row-bg" justify="center">
     <el-col :span="6">
-       <div>
+      <div>
         <h2>metrics</h2>
         <el-checkbox-group
           v-model="checkedMetrics"
@@ -64,7 +64,6 @@
           result
         </h4>
       </div>
-     
     </el-col>
     <el-col :span="12">
       <v-chart
@@ -110,7 +109,6 @@
         >
         </el-pagination>
       </div>
-      
     </el-col>
     <el-col :span="6"><div></div></el-col>
   </el-row>
@@ -134,7 +132,12 @@ export default {
         }
         var data = response.data;
         this.metrics = data.object.split(",");
-        this.checkedMetrics=["tidb_command_per_second","tikv_cpu_avg","tikv_cpu_std","tikv_cpu_std/avg"];
+        this.checkedMetrics = [
+          "tidb_command_per_second",
+          "tikv_cpu_avg",
+          "tikv_cpu_std",
+          "tikv_cpu_std/avg",
+        ];
         this.refreshWorkloadName();
       });
     },
@@ -193,8 +196,8 @@ export default {
 
             var echart = JSON.parse(JSON.stringify(this.echartTemplate));
             echart.title.text = key;
-            echart.xAxis.data = value.map((v) => v.Start);
-            echart.series[0].data = value.map((v) => v.Value);
+            echart.xAxis.data = value.map((v) => v.Start).reverse();
+            echart.series[0].data = value.map((v) => v.Value).reverse();
             echart.series[0].name = key;
             data[key] = echart;
           }
